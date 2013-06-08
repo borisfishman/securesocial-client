@@ -25,8 +25,6 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 public abstract class BaseCommunicator {
 
-	
-
 	private String paymentToken;
 	private String endpoint = "https://service.securesocial.net";
 	private String additionalHeader;
@@ -36,37 +34,37 @@ public abstract class BaseCommunicator {
 	}
 
 	protected void throwE(Exception ex) {
-		
+
 		if (ex instanceof ServiceException) {
 			ServiceException se = (ServiceException) ex;
 			throw se;
 		}
 		if (ex instanceof IllegalArgumentException) {
-			throw new ServiceException("invalid input");
+			throw new ServiceException("invalid input: " + ex.getMessage());
 		}
 
-		if(ex instanceof NullPointerException) {
-			throw ((NullPointerException)ex);
+		if (ex instanceof NullPointerException) {
+			throw ((NullPointerException) ex);
 		}
-		
+
 		if (ex.getMessage().contains("checksum mismatch")) {
 			throw new AuthenticationException("invalid password");
 		}
-		
-		if(ex instanceof UnknownHostException || ex instanceof ConnectException) {
+
+		if (ex instanceof UnknownHostException || ex instanceof ConnectException) {
 			throw new NetworkException("Service or network connection is not available");
 		}
 
 		throw new RuntimeException(ex);
 	}
-	
+
 	protected void simplePut(String url, InputStream from, long size) throws Exception {
 		InputStreamEntity entity = new InputStreamEntity(from, size);
 		hit(null, new HttpPut(url), null, entity, null, null);
 	}
 
 	public InputStream simpleGet(String url) throws Exception {
-		
+
 		return hit(null, new HttpGet(url), null, null, null, null);
 	}
 
@@ -81,24 +79,25 @@ public abstract class BaseCommunicator {
 		URL url = method.getURI().toURL();
 
 		String uri = url.getPath();
-		
+
 		if (accepttype != null)
 			method.setHeader("Accept", accepttype);
 		if (!StringUtils.isEmpty(paymentToken)) {
 			method.setHeader("X-SecureSocial-Token", paymentToken);
 		}
-		if(!StringUtils.isEmpty(additionalHeader)) {
+		if (!StringUtils.isEmpty(additionalHeader)) {
 			method.setHeader("X-SecureSocial-Xtra", additionalHeader);
 		}
-		
-		
+
+		method.setHeader("X-SecureSocial-Client", "public-from-boris");
+
 		MessageDigest digest = null;
 
 		if (doSign) {
 
 			digest = MessageDigest.getInstance("SHA-256");
 			digest.update(uri.getBytes());
-		} 
+		}
 		if (entity != null) {
 			HttpEntityEnclosingRequestBase request = (HttpEntityEnclosingRequestBase) method;
 			if (contentType != null)
@@ -123,20 +122,20 @@ public abstract class BaseCommunicator {
 			method.setHeader("X-SecureSocial-Signature", sig);
 
 		}
-		long now = System.currentTimeMillis();
 		HttpResponse response = new DefaultHttpClient().execute(method);
 		int responseCode = response.getStatusLine().getStatusCode();
-		
-		
+
 		if (responseCode != 200) {
-			
+
 			StringWriter sw = new StringWriter();
 			IOUtils.copy(response.getEntity().getContent(), sw);
 			String responseBody = sw.toString();
 			String msg = responseCode + " " + responseBody;
-			
+
 			if (responseCode == 404) {
 				throw new NotFoundException(errorMessageFromResponse(responseBody));
+			} else if (responseCode == 400) {
+				throw new IllegalArgumentException(errorMessageFromResponse(responseBody));
 			} else if (responseCode == 402) {
 				throw new BillingException(errorMessageFromResponse(responseBody));
 			} else if (responseCode == 403) {
@@ -154,10 +153,10 @@ public abstract class BaseCommunicator {
 		try {
 			@SuppressWarnings("unchecked")
 			Map<String, String> map = om.readValue(string, Map.class);
-			
+
 			return map.get("error");
 		} catch (Exception e) {
-			
+
 			return "unknown error";
 		}
 	}
@@ -166,8 +165,6 @@ public abstract class BaseCommunicator {
 		HttpGet get = new HttpGet(endpoint + url);
 		return hit(privateKey, get, password);
 	}
-
-	
 
 	protected String getString(String privateKey, String url, String password) throws Exception {
 		StringWriter sw = new StringWriter();
@@ -198,8 +195,6 @@ public abstract class BaseCommunicator {
 		hit(privateKey, put, password, entity);
 
 	}
-
-	
 
 	public String getPaymentToken() {
 		return paymentToken;
