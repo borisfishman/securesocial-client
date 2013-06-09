@@ -1,12 +1,16 @@
 package net.securesocial.client;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -37,10 +41,12 @@ public class SecureSocialClient extends BaseCommunicator {
 
 	/**
 	 * create new identity
+	 * 
 	 * @param privateKey
 	 * @param publicKey
 	 * @param password
-	 * @param id - new id
+	 * @param id
+	 *            - new id
 	 */
 	public void createIdentity(InputStream privateKey, InputStream publicKey, String password, String id) {
 		createIdentity(privateKey, publicKey, password, id, (Map<String, String>) null);
@@ -51,13 +57,20 @@ public class SecureSocialClient extends BaseCommunicator {
 	 * @param privateKey
 	 * @param publicKey
 	 * @param password
-	 * @param id - new id
-	 * @param name - name of new identity
+	 * @param id
+	 *            - new id
+	 * @param name
+	 *            - name of new identity
 	 */
 	public void createIdentity(InputStream privateKey, InputStream publicKey, String password, String id, String name) {
+		Map<String, String> properties = createPropertiesForName(name);
+		createIdentity(privateKey, publicKey, password, id, properties);
+	}
+
+	private Map<String, String> createPropertiesForName(String name) {
 		Map<String, String> properties = new HashMap<String, String>();
 		properties.put("Name", name);
-		createIdentity(privateKey, publicKey, password, id, properties);
+		return properties;
 	}
 
 	/**
@@ -65,8 +78,10 @@ public class SecureSocialClient extends BaseCommunicator {
 	 * @param privateKey
 	 * @param publicKey
 	 * @param password
-	 * @param id - new id
-	 * @param properties - map of identity properties
+	 * @param id
+	 *            - new id
+	 * @param properties
+	 *            - map of identity properties
 	 */
 	public void createIdentity(InputStream privateKey, InputStream publicKey, String password, String id, Map<String, String> properties) {
 		try {
@@ -85,6 +100,11 @@ public class SecureSocialClient extends BaseCommunicator {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
+	/**
+	 * Retrieve identity information
+	 * @param id of identity
+	 * @return identity details
+	 */
 	public Identity getIdentity(String id) {
 		try {
 			String string = getString(null, "/identities/" + id, null);
@@ -95,6 +115,65 @@ public class SecureSocialClient extends BaseCommunicator {
 			throwE(e);
 		}
 		return null;
+	}
+
+	/**
+	 * update existing identity
+	 * 
+	 * @param id
+	 * @param oldPrivateKey
+	 * @param newPublicKey
+	 * @param password
+	 * @param newName
+	 */
+	public void updateIdentity(String id, InputStream oldPrivateKey, InputStream newPublicKey, String password, String newName) {
+		updateIdentity(id, oldPrivateKey, newPublicKey, password, createPropertiesForName(newName));
+	}
+
+	/**
+	 * update existing identity
+	 * 
+	 * @param id
+	 * @param oldPrivateKey
+	 * @param newPublicKey
+	 * @param password
+	 * @param newProperties
+	 */
+	public void updateIdentity(String id, InputStream oldPrivateKey, InputStream newPublicKey, String password, Map<String, String> newProperties) {
+		try {
+			Map<String, Object> newPerson = new HashMap<String, Object>();
+			newPerson.put("id", id);
+			newPerson.put("publicKey", streamToString(newPublicKey));
+			if (newProperties != null) {
+				newPerson.put("properties", newProperties);
+			}
+			ObjectMapper om = new ObjectMapper();
+			putString(streamToString(oldPrivateKey), "/identities/" + id, om.writeValueAsString(newPerson), password);
+		} catch (Exception ex) {
+			throwE(ex);
+		}
+	}
+
+	public void savePrivateContent(String id, InputStream privateKey, String password, String path, InputStream content) {
+		try {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			IOUtils.copy(content, baos);
+			byte[] encoded = Base64.encodeBase64(baos.toByteArray());
+			putString(streamToString(privateKey), "/identities/" + id + "/private/" + path, new String(encoded), password);
+
+		} catch (Exception ex) {
+			throwE(ex);
+		}
+	}
+
+	public void getPrivateContent(String id, InputStream privateKey, String password, String path, OutputStream content) {
+		try {
+			String encoded = getString(streamToString(privateKey), "/identities/" + id + "/private/" + path, password);
+			byte[] bytes = Base64.decodeBase64(encoded);
+			IOUtils.copy(new ByteArrayInputStream(bytes), content);
+		} catch (Exception ex) {
+			throwE(ex);
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -112,4 +191,5 @@ public class SecureSocialClient extends BaseCommunicator {
 		IOUtils.copy(input, sw);
 		return sw.toString();
 	}
+
 }

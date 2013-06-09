@@ -195,6 +195,7 @@ public abstract class BaseCommunicator {
 		hit(privateKey, put, password, entity);
 
 	}
+	
 
 	public String getPaymentToken() {
 		return paymentToken;
