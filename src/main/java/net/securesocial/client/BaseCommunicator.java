@@ -40,7 +40,7 @@ public abstract class BaseCommunicator {
 			throw se;
 		}
 		if (ex instanceof IllegalArgumentException) {
-			throw new ServiceException("invalid input: " + ex.getMessage());
+			throw new ServiceException(ex);
 		}
 
 		if (ex instanceof NullPointerException) {

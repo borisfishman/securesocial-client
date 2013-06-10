@@ -155,19 +155,20 @@ public class SecureSocialClient extends BaseCommunicator {
 	}
 
 	/**
-	 * save small amount of private content keyed by guid
+	 * save small amount of private content keyed by guid. It is encrypted with public key of owner.
 	 * @param id
 	 * @param privateKey
 	 * @param password
 	 * @param path
 	 * @param content
 	 */
-	public void savePrivateContent(String id, InputStream privateKey, String password, String guid, InputStream content) {
+	public void savePrivateContent(String id, InputStream privateKey, InputStream publicKey, String password, String guid, InputStream content) {
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			IOUtils.copy(content, baos);
-			byte[] encoded = Base64.encodeBase64(baos.toByteArray());
-			putString(streamToString(privateKey), "/identities/" + id + "/private/" + guid, new String(encoded), password);
+			String publicKeyBytes = streamToString(publicKey);
+			
+			CryptoWrapper.encrypt(content, baos, publicKeyBytes);
+			putString(streamToString(privateKey), "/identities/" + id + "/private/" + guid, new String(baos.toByteArray()), password);
 
 		} catch (Exception ex) {
 			throwE(ex);
@@ -184,9 +185,10 @@ public class SecureSocialClient extends BaseCommunicator {
 	 */
 	public void getPrivateContent(String id, InputStream privateKey, String password, String guid, OutputStream content) {
 		try {
-			String encoded = getString(streamToString(privateKey), "/identities/" + id + "/private/" + guid, password);
-			byte[] bytes = Base64.decodeBase64(encoded);
-			IOUtils.copy(new ByteArrayInputStream(bytes), content);
+			String privateKeyString = streamToString(privateKey);
+			String encoded = getString(privateKeyString, "/identities/" + id + "/private/" + guid, password);
+			
+			CryptoWrapper.decrypt(new ByteArrayInputStream(encoded.getBytes()), content, privateKeyString, password);
 		} catch (Exception ex) {
 			throwE(ex);
 		}

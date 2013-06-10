@@ -18,7 +18,7 @@ public class SecureSocialClientContentTests extends SecureSocialClientAbstractTe
 		String testData = "dsf dg fhf hbte hteh tghbtgrh trgh 3235 4tg rg fg dfg f";
 		createTestUserOne(client, newId, newName);
 		String guid = UUID.randomUUID().toString();
-		client.savePrivateContent(newId, getUserOnePrivateKey(), "testpassphrase", guid, new ByteArrayInputStream(testData.getBytes()));
+		client.savePrivateContent(newId, getUserOnePrivateKey(), getUserOnePublicKey(), "testpassphrase", guid, new ByteArrayInputStream(testData.getBytes()));
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		client.getPrivateContent(newId, getUserOnePrivateKey(), "testpassphrase", guid, baos);
 		Assert.assertEquals(testData, new String(baos.toByteArray()));
