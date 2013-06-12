@@ -6,7 +6,7 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-public class SecureSocialClientIdentityTests extends SecureSocialClientAbstractTest {
+public class TestSecureSocialClientIdentity extends SecureSocialClientAbstractTest {
 
 	@Test
 	public void testSuggestedIds() {

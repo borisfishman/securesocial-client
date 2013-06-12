@@ -8,7 +8,7 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-public class SecureSocialClientContentTests extends SecureSocialClientAbstractTest {
+public class TestSecureSocialClientContentManipulation extends SecureSocialClientAbstractTest {
 
 	@Test
 	public void testPrivateContent() {

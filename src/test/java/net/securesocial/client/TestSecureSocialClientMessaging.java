@@ -11,7 +11,7 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-public class SecureSocialClientMessagingTests extends SecureSocialClientAbstractTest {
+public class TestSecureSocialClientMessaging extends SecureSocialClientAbstractTest {
 
 	String testData = "sdg gf ghfegt445 h! GDGF GFG FG FGFEW dsfdfg g ggggg";
 
