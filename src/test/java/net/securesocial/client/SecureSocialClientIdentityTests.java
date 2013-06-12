@@ -51,7 +51,7 @@ public class SecureSocialClientIdentityTests extends SecureSocialClientAbstractT
 		Identity copy = client.getIdentity(newId);
 		Assert.assertEquals(newName, copy.getProperties().get("Name"));
 		// change name
-		client.updateIdentity(newId, getUserOnePrivateKey(), getUserOnePublicKey(), "testpassphrase", "New Name");
+		client.updateIdentity(newId, getUserOnePrivateKey(), getUserOnePublicKey(), TESTPASSPHRASE, "New Name");
 		// get identity back, see name updated
 		long start = System.currentTimeMillis();
 		while (true) {

@@ -5,6 +5,8 @@ import java.util.List;
 
 public abstract class SecureSocialClientAbstractTest {
 
+	protected static final String TESTPASSPHRASE = "testpassphrase";
+
 	protected String getNewIdentityId(SecureSocialClient client) {
 		List<String> ids = client.getSuggestedIds();
 		String newId = ids.get(0);
@@ -12,7 +14,11 @@ public abstract class SecureSocialClientAbstractTest {
 	}
 
 	protected void createTestUserOne(SecureSocialClient client, String newId, String newName) {
-		client.createIdentity(getUserOnePrivateKey(), getUserOnePublicKey(), "testpassphrase", newId, newName);
+		client.createIdentity(getUserOnePrivateKey(), getUserOnePublicKey(), TESTPASSPHRASE, newId, newName);
+	}
+	
+	protected void createTestUserTwo(SecureSocialClient client, String newId, String newName) {
+		client.createIdentity(getUserTwoPrivateKey(), getUserTwoPublicKey(), TESTPASSPHRASE, newId, newName);
 	}
 
 	protected InputStream getUserOnePublicKey() {
@@ -23,11 +29,11 @@ public abstract class SecureSocialClientAbstractTest {
 		return getClass().getResourceAsStream("/testuserone-private.asc");
 	}
 
-	private InputStream getUserTwoPublicKey() {
+	protected InputStream getUserTwoPublicKey() {
 		return getClass().getResourceAsStream("/testusertwo-public.asc");
 	}
 
-	private InputStream getUserTwoPrivateKey() {
+	protected InputStream getUserTwoPrivateKey() {
 		return getClass().getResourceAsStream("/testusertwo-private.asc");
 	}
 
