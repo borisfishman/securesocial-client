@@ -4,6 +4,9 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -216,10 +219,10 @@ public class SecureSocialClient extends BaseCommunicator {
 	}
 
 	public void send(String data, String sender, String password, InputStream senderPrivateKey, String... recepientIds) {
-		send(data, null, null, sender, password, senderPrivateKey, recepientIds);
+		send(data, null, sender, password, senderPrivateKey, recepientIds);
 	}
 
-	public void send(String data, InputStream attachment, Long attachmentSize, String senderId, String password, InputStream senderPrivateKey, String... recepientIds) {
+	public void send(String data, InputStream attachment, String senderId, String password, InputStream senderPrivateKey, String... recepientIds) {
 
 		try {
 			ObjectMapper om = new ObjectMapper();
@@ -234,6 +237,7 @@ public class SecureSocialClient extends BaseCommunicator {
 			// payload
 			List<Map<String, Object>> destinations = new ArrayList<Map<String, Object>>();
 
+			// use random message key
 			String messageKey = UUID.randomUUID().toString();
 
 			for (String targetId : recepientIds) {
@@ -250,26 +254,75 @@ public class SecureSocialClient extends BaseCommunicator {
 			message.put("destinations", destinations);
 			// encrypt message text with message key
 			message.put("envelope", CryptoWrapper.encryptWithPassphrase(data, messageKey));
-			if(attachment != null) {
+			if (attachment != null) {
 				message.put("attachment", "true");
 			}
-			
+
 			String messageString = om.writeValueAsString(message);
 			System.out.println("message:" + messageString);
-			
+
 			// send message
 			String response = postString(streamToString(senderPrivateKey), "/identities/" + senderId + "/outgoing", messageString, password);
-			
-			
-			if(attachment != null) {
+
+			if (attachment != null) {
 				Map<String, String> map = om.readValue(response, Map.class);
 				String uploadUrl = map.get("attachment_upload_url");
-				
-				simplePut(uploadUrl, attachment, attachmentSize);
+				File tempFile = File.createTempFile("securesocial", ".file");
+				try {
+					// encrypt attachment to a temp file using message key
+					CryptoWrapper.encryptWithPassphrase(attachment, new FileOutputStream(tempFile), messageKey);
+					// send temp file
+					simplePut(uploadUrl, new FileInputStream(tempFile), tempFile.length());
+				} finally {
+					tempFile.delete();
+				}
+
 			}
-			
+
 		} catch (Exception ex) {
 			throwE(ex);
+		}
+	}
+
+	public void acceptMessages(String myId, String password, InputStream myPrivateKey, String senderId) {
+		try {
+			getString(streamToString(myPrivateKey), "/identities/" + myId + "/incoming/users/" + senderId, password);
+		} catch (Exception ex) {
+			throwE(ex);
+		}
+	}
+
+	public List<Message> getMessages(String myId, String password, InputStream myPrivateKey, String timeline) {
+		try {
+			String privateKeyString = streamToString(myPrivateKey);
+			System.out.println("private key:" + privateKeyString);
+			InputStream stream = getStream(privateKeyString, "/identities/" + myId + "/current/" + timeline, password);
+			List<Map<String, Object>> messages = (List<Map<String, Object>>) new ObjectMapper().readValue(stream, Map.class).get("messages");
+			List<Message> results = new ArrayList<Message>();
+			for (Map<String, Object> message : messages) {
+				// for each message
+				// extract encrypted message key
+				List<Object> destinations = (List<Object>) message.get("destinations");
+				Map<String, Object> destination = (Map<String, Object>) destinations.get(0);
+				Map<String, String> attributes = (Map<String, String>)destination.get("attributes");
+				System.out.println("attributes:" + attributes.get("key"));
+				
+				// decrypt message key
+				String messageKey = CryptoWrapper.decrypt(attributes.get("key"), privateKeyString, password);
+				// decrypt message
+				String payload = CryptoWrapper.decryptWithPassphrase((String) message.get("envelope"), messageKey);
+				
+				Message result = new Message((String) message.get("id"), (String) message.get("from"), payload, Boolean.parseBoolean((String) message.get("attachment")));
+				if(result.hasAttachment()) {
+					result.setMessageKey(messageKey);
+				}
+				results.add(result);
+			}
+			return results;
+
+		} catch (Exception ex) {
+			throwE(ex);
+			return null;
 		}
 	}
 
