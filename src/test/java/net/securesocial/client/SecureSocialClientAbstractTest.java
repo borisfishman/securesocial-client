@@ -7,17 +7,17 @@ public abstract class SecureSocialClientAbstractTest {
 
 	protected static final String TESTPASSPHRASE = "testpassphrase";
 
-	protected String getNewIdentityId(SecureSocialClient client) {
+	protected String getNewIdentityId(SecureSocialClientInterface client) {
 		List<String> ids = client.getSuggestedIds();
 		String newId = ids.get(0);
 		return newId;
 	}
 
-	protected void createTestUserOne(SecureSocialClient client, String newId, String newName) {
+	protected void createTestUserOne(SecureSocialClientInterface client, String newId, String newName) {
 		client.createIdentity(getUserOnePrivateKey(), getUserOnePublicKey(), TESTPASSPHRASE, newId, newName);
 	}
 	
-	protected void createTestUserTwo(SecureSocialClient client, String newId, String newName) {
+	protected void createTestUserTwo(SecureSocialClientInterface client, String newId, String newName) {
 		client.createIdentity(getUserTwoPrivateKey(), getUserTwoPublicKey(), TESTPASSPHRASE, newId, newName);
 	}
 
@@ -37,7 +37,7 @@ public abstract class SecureSocialClientAbstractTest {
 		return getClass().getResourceAsStream("/testusertwo-private.asc");
 	}
 
-	protected SecureSocialClient getNewClient() {
+	protected SecureSocialClientInterface getNewClient() {
 		SecureSocialClient client = new SecureSocialClient();
 		client.setAdditionalHeader("SecureSocial.net junit client");
 		return client;

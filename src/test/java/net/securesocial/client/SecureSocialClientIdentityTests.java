@@ -10,7 +10,7 @@ public class SecureSocialClientIdentityTests extends SecureSocialClientAbstractT
 
 	@Test
 	public void testSuggestedIds() {
-		SecureSocialClient client = getNewClient();
+		SecureSocialClientInterface client = getNewClient();
 		List<String> ids = client.getSuggestedIds();
 		Assert.assertNotNull(ids);
 		Assert.assertTrue(ids.size() > 1);
@@ -19,7 +19,7 @@ public class SecureSocialClientIdentityTests extends SecureSocialClientAbstractT
 
 	@Test
 	public void testCreateAndRetrieveIdentity() {
-		SecureSocialClient client = getNewClient();
+		SecureSocialClientInterface client = getNewClient();
 		String newId = getNewIdentityId(client);
 		String newName = "Name Me";
 
@@ -43,7 +43,7 @@ public class SecureSocialClientIdentityTests extends SecureSocialClientAbstractT
 
 	@Test
 	public void testUpdateIdentity() throws InterruptedException {
-		SecureSocialClient client = getNewClient();
+		SecureSocialClientInterface client = getNewClient();
 		String newId = getNewIdentityId(client);
 		String newName = "Name Me";
 		createTestUserOne(client, newId, newName);

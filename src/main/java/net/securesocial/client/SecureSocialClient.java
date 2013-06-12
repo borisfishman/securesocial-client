@@ -1,7 +1,5 @@
 package net.securesocial.client;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -17,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -26,13 +23,12 @@ import org.codehaus.jackson.map.ObjectMapper;
  * 
  * 
  */
-public class SecureSocialClient extends BaseCommunicator {
+public class SecureSocialClient extends BaseCommunicator implements SecureSocialClientInterface {
 
-	/**
-	 * get list of new IDs
-	 * 
-	 * @return list of ids
+	/* (non-Javadoc)
+	 * @see net.securesocial.client.SecureSocialClientInterface#getSuggestedIds()
 	 */
+	@Override
 	public List<String> getSuggestedIds() {
 		ObjectMapper om = new ObjectMapper();
 		try {
@@ -46,29 +42,18 @@ public class SecureSocialClient extends BaseCommunicator {
 
 	}
 
-	/**
-	 * create new identity
-	 * 
-	 * @param privateKey
-	 * @param publicKey
-	 * @param password
-	 * @param id
-	 *            - new id
+	/* (non-Javadoc)
+	 * @see net.securesocial.client.SecureSocialClientInterface#createIdentity(java.io.InputStream, java.io.InputStream, java.lang.String, java.lang.String)
 	 */
+	@Override
 	public void createIdentity(InputStream privateKey, InputStream publicKey, String password, String id) {
 		createIdentity(privateKey, publicKey, password, id, (Map<String, String>) null);
 	}
 
-	/**
-	 * 
-	 * @param privateKey
-	 * @param publicKey
-	 * @param password
-	 * @param id
-	 *            - new id
-	 * @param name
-	 *            - name of new identity
+	/* (non-Javadoc)
+	 * @see net.securesocial.client.SecureSocialClientInterface#createIdentity(java.io.InputStream, java.io.InputStream, java.lang.String, java.lang.String, java.lang.String)
 	 */
+	@Override
 	public void createIdentity(InputStream privateKey, InputStream publicKey, String password, String id, String name) {
 		Map<String, String> properties = createPropertiesForName(name);
 		createIdentity(privateKey, publicKey, password, id, properties);
@@ -80,16 +65,10 @@ public class SecureSocialClient extends BaseCommunicator {
 		return properties;
 	}
 
-	/**
-	 * 
-	 * @param privateKey
-	 * @param publicKey
-	 * @param password
-	 * @param id
-	 *            - new id
-	 * @param properties
-	 *            - map of identity properties
+	/* (non-Javadoc)
+	 * @see net.securesocial.client.SecureSocialClientInterface#createIdentity(java.io.InputStream, java.io.InputStream, java.lang.String, java.lang.String, java.util.Map)
 	 */
+	@Override
 	public void createIdentity(InputStream privateKey, InputStream publicKey, String password, String id, Map<String, String> properties) {
 		try {
 			Map<String, Object> newPerson = new HashMap<String, Object>();
@@ -106,6 +85,10 @@ public class SecureSocialClient extends BaseCommunicator {
 
 	}
 
+	/* (non-Javadoc)
+	 * @see net.securesocial.client.SecureSocialClientInterface#getIdentity(java.lang.String)
+	 */
+	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	/**
 	 * Retrieve identity information
@@ -124,28 +107,18 @@ public class SecureSocialClient extends BaseCommunicator {
 		return null;
 	}
 
-	/**
-	 * update existing identity
-	 * 
-	 * @param id
-	 * @param oldPrivateKey
-	 * @param newPublicKey
-	 * @param password
-	 * @param newName
+	/* (non-Javadoc)
+	 * @see net.securesocial.client.SecureSocialClientInterface#updateIdentity(java.lang.String, java.io.InputStream, java.io.InputStream, java.lang.String, java.lang.String)
 	 */
+	@Override
 	public void updateIdentity(String id, InputStream oldPrivateKey, InputStream newPublicKey, String password, String newName) {
 		updateIdentity(id, oldPrivateKey, newPublicKey, password, createPropertiesForName(newName));
 	}
 
-	/**
-	 * update existing identity
-	 * 
-	 * @param id
-	 * @param oldPrivateKey
-	 * @param newPublicKey
-	 * @param password
-	 * @param newProperties
+	/* (non-Javadoc)
+	 * @see net.securesocial.client.SecureSocialClientInterface#updateIdentity(java.lang.String, java.io.InputStream, java.io.InputStream, java.lang.String, java.util.Map)
 	 */
+	@Override
 	public void updateIdentity(String id, InputStream oldPrivateKey, InputStream newPublicKey, String password, Map<String, String> newProperties) {
 		try {
 			Map<String, Object> newPerson = new HashMap<String, Object>();
@@ -161,16 +134,10 @@ public class SecureSocialClient extends BaseCommunicator {
 		}
 	}
 
-	/**
-	 * save small amount of private content keyed by guid. It is encrypted with
-	 * public key of owner.
-	 * 
-	 * @param id
-	 * @param privateKey
-	 * @param password
-	 * @param path
-	 * @param content
+	/* (non-Javadoc)
+	 * @see net.securesocial.client.SecureSocialClientInterface#savePrivateContent(java.lang.String, java.io.InputStream, java.io.InputStream, java.lang.String, java.lang.String, java.io.InputStream)
 	 */
+	@Override
 	public void savePrivateContent(String id, InputStream privateKey, InputStream publicKey, String password, String guid, InputStream content) {
 		try {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -184,15 +151,10 @@ public class SecureSocialClient extends BaseCommunicator {
 		}
 	}
 
-	/**
-	 * get private content back
-	 * 
-	 * @param id
-	 * @param privateKey
-	 * @param password
-	 * @param path
-	 * @param content
+	/* (non-Javadoc)
+	 * @see net.securesocial.client.SecureSocialClientInterface#getPrivateContent(java.lang.String, java.io.InputStream, java.lang.String, java.lang.String, java.io.OutputStream)
 	 */
+	@Override
 	public void getPrivateContent(String id, InputStream privateKey, String password, String guid, OutputStream content) {
 		try {
 			String privateKeyString = streamToString(privateKey);
@@ -204,12 +166,15 @@ public class SecureSocialClient extends BaseCommunicator {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see net.securesocial.client.SecureSocialClientInterface#getIncomingUsers(java.lang.String, java.io.InputStream, java.lang.String)
+	 */
+	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public List<String> getIncomingUsers(String id, InputStream privateKey, String password) {
 		try {
 			String privateKeyString = streamToString(privateKey);
 			String string = getString(privateKeyString, "/identities/" + id + "/incoming/users", password);
-			System.out.println("BEEE:" + string);
 			Map<String, Map> obj = new ObjectMapper().readValue(string, Map.class);
 			return (List<String>) obj.get("users");
 		} catch (Exception ex) {
@@ -218,11 +183,20 @@ public class SecureSocialClient extends BaseCommunicator {
 		return null;
 	}
 
-	public void send(String data, String sender, String password, InputStream senderPrivateKey, String... recepientIds) {
-		send(data, null, sender, password, senderPrivateKey, recepientIds);
+	/* (non-Javadoc)
+	 * @see net.securesocial.client.SecureSocialClientInterface#sendMessage(java.lang.String, java.lang.String, java.lang.String, java.io.InputStream, java.lang.String)
+	 */
+	@Override
+	public void sendMessage(String data, String sender, String password, InputStream senderPrivateKey, String... recepientIds) {
+		sendMessage(data, null, sender, password, senderPrivateKey, recepientIds);
 	}
 
-	public void send(String data, InputStream attachment, String senderId, String password, InputStream senderPrivateKey, String... recepientIds) {
+	/* (non-Javadoc)
+	 * @see net.securesocial.client.SecureSocialClientInterface#sendMessage(java.lang.String, java.io.InputStream, java.lang.String, java.lang.String, java.io.InputStream, java.lang.String)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public void sendMessage(String data, InputStream attachment, String senderId, String password, InputStream senderPrivateKey, String... recepientIds) {
 
 		try {
 			ObjectMapper om = new ObjectMapper();
@@ -259,7 +233,7 @@ public class SecureSocialClient extends BaseCommunicator {
 			}
 
 			String messageString = om.writeValueAsString(message);
-			System.out.println("message:" + messageString);
+			
 
 			// send message
 			String response = postString(streamToString(senderPrivateKey), "/identities/" + senderId + "/outgoing", messageString, password);
@@ -284,6 +258,10 @@ public class SecureSocialClient extends BaseCommunicator {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see net.securesocial.client.SecureSocialClientInterface#acceptMessages(java.lang.String, java.lang.String, java.io.InputStream, java.lang.String)
+	 */
+	@Override
 	public void acceptMessages(String myId, String password, InputStream myPrivateKey, String senderId) {
 		try {
 			getString(streamToString(myPrivateKey), "/identities/" + myId + "/incoming/users/" + senderId, password);
@@ -292,10 +270,15 @@ public class SecureSocialClient extends BaseCommunicator {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see net.securesocial.client.SecureSocialClientInterface#getMessages(java.lang.String, java.lang.String, java.io.InputStream, java.lang.String)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
 	public List<Message> getMessages(String myId, String password, InputStream myPrivateKey, String timeline) {
 		try {
 			String privateKeyString = streamToString(myPrivateKey);
-			System.out.println("private key:" + privateKeyString);
+			
 			InputStream stream = getStream(privateKeyString, "/identities/" + myId + "/current/" + timeline, password);
 			List<Map<String, Object>> messages = (List<Map<String, Object>>) new ObjectMapper().readValue(stream, Map.class).get("messages");
 			List<Message> results = new ArrayList<Message>();
@@ -304,16 +287,16 @@ public class SecureSocialClient extends BaseCommunicator {
 				// extract encrypted message key
 				List<Object> destinations = (List<Object>) message.get("destinations");
 				Map<String, Object> destination = (Map<String, Object>) destinations.get(0);
-				Map<String, String> attributes = (Map<String, String>)destination.get("attributes");
-				System.out.println("attributes:" + attributes.get("key"));
+				Map<String, String> attributes = (Map<String, String>) destination.get("attributes");
 				
+
 				// decrypt message key
 				String messageKey = CryptoWrapper.decrypt(attributes.get("key"), privateKeyString, password);
 				// decrypt message
 				String payload = CryptoWrapper.decryptWithPassphrase((String) message.get("envelope"), messageKey);
-				
+
 				Message result = new Message((String) message.get("id"), (String) message.get("from"), payload, Boolean.parseBoolean((String) message.get("attachment")));
-				if(result.hasAttachment()) {
+				if (result.hasAttachment()) {
 					result.setMessageKey(messageKey);
 				}
 				results.add(result);
@@ -323,6 +306,31 @@ public class SecureSocialClient extends BaseCommunicator {
 		} catch (Exception ex) {
 			throwE(ex);
 			return null;
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see net.securesocial.client.SecureSocialClientInterface#getMessageAttachment(java.lang.String, java.lang.String, java.io.InputStream, java.lang.String, net.securesocial.client.Message, java.io.OutputStream)
+	 */
+	@Override
+	public void getMessageAttachment(String myId, String password, InputStream myPrivateKey, String timeline, Message msg, OutputStream output) {
+		try {
+			InputStream stream = getStream(streamToString(myPrivateKey), "/identities/" + myId + "/current/" + timeline + "/attachment/" + msg.getId(), password);
+			CryptoWrapper.decryptWithPassphrase(stream, output, msg.getMessageKey());			
+		} catch (Exception ex) {
+			throwE(ex);
+		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see net.securesocial.client.SecureSocialClientInterface#deleteMessage(java.lang.String, java.lang.String, java.io.InputStream, java.lang.String, net.securesocial.client.Message)
+	 */
+	@Override
+	public void deleteMessage(String myId, String password, InputStream myPrivateKey, String timeline, Message msg) {
+		try {
+			delete(streamToString(myPrivateKey), "/identities/" + myId + "/current/" + timeline + "/" + msg.getId(), password);
+		} catch (Exception ex) {
+			throwE(ex);
 		}
 	}
 

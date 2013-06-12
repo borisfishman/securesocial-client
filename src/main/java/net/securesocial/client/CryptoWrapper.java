@@ -5,6 +5,7 @@ import java.io.OutputStream;
 
 public class CryptoWrapper {
 
+	// substitute different Crypto impl if needed
 	private static CryptoServiceInterface service = new BCCrypto();
 	
 	

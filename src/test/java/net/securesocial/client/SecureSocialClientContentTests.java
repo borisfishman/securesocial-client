@@ -12,7 +12,7 @@ public class SecureSocialClientContentTests extends SecureSocialClientAbstractTe
 
 	@Test
 	public void testPrivateContent() {
-		SecureSocialClient client = getNewClient();
+		SecureSocialClientInterface client = getNewClient();
 		String newId = getNewIdentityId(client);
 		String newName = "Name Me";
 		String testData = "dsf dg fhf hbte hteh tghbtgrh trgh 3235 4tg rg fg dfg f";
