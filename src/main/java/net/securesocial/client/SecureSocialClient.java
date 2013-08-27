@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -348,6 +349,23 @@ public class SecureSocialClient extends BaseCommunicator implements SecureSocial
 		StringWriter sw = new StringWriter();
 		IOUtils.copy(input, sw);
 		return sw.toString();
+	}
+
+	@Override
+	public List<Identity> findIdentitiesByName(String name) {
+		try {
+			InputStream stream = getStream(null, "/identities/properties/Name/" + URLEncoder.encode(name, "UTF-8"), null);
+			@SuppressWarnings("unchecked")
+			List<Map<String, Object>> list = (List<Map<String, Object>>) new ObjectMapper().readValue(stream, Map.class).get("identities");
+			List<Identity> result = new ArrayList<Identity>();
+			for (Map<String, Object> realObj : list) {
+				result.add(fromObjectMap(realObj));
+			}
+			return result;
+		} catch (Exception e) {
+			throwE(e);
+		}
+		return null;
 	}
 
 }

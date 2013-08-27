@@ -66,6 +66,14 @@ public interface SecureSocialClientInterface {
 	 * @param password
 	 * @param newName
 	 */
+	
+	/**
+	 * find identities by name
+	 * @param name
+	 * @return
+	 */
+	public List<Identity> findIdentitiesByName(String name);
+	
 	public void updateIdentity(String id, InputStream oldPrivateKey, InputStream newPublicKey, String password, String newName);
 
 	/**

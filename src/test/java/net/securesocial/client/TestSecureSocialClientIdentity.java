@@ -4,6 +4,7 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Test;
 
 public class TestSecureSocialClientIdentity extends SecureSocialClientAbstractTest {
@@ -67,5 +68,24 @@ public class TestSecureSocialClientIdentity extends SecureSocialClientAbstractTe
 			Thread.sleep(1000);
 		}
 	}
+	
+	@Test
+	public void testFindByName() {
+		SecureSocialClientInterface client = getNewClient();
 
+		// create two users
+		String randomPrefix = RandomStringUtils.randomAlphanumeric(4);
+		String oneId = getNewIdentityId(client);
+		String twoId = getNewIdentityId(client);
+		createTestUserOne(client, oneId, randomPrefix + " one");
+		createTestUserTwo(client, twoId, randomPrefix + " two");
+		
+		List<Identity> found = client.findIdentitiesByName(randomPrefix);
+		Assert.assertEquals(2, found.size());
+		
+		found = client.findIdentitiesByName(randomPrefix + " tw");
+		Assert.assertEquals(1, found.size());
+		
+	}
+ 
 }
