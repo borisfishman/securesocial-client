@@ -193,5 +193,6 @@ public interface SecureSocialClientInterface {
 	 */
 	public void deleteMessage(String myId, String password, InputStream myPrivateKey, String timeline, String messageId);
 	
+	public void setPaymentToken(String token);
 
 }
