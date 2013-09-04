@@ -182,5 +182,16 @@ public interface SecureSocialClientInterface {
 	 * @param message to delete
 	 */
 	public void deleteMessage(String myId, String password, InputStream myPrivateKey, String timeline, Message msg);
+	
+	/**
+	 * delete individual message
+	 * @param myId
+	 * @param password
+	 * @param myPrivateKey
+	 * @param timeline mask
+	 * @param message id to delete
+	 */
+	public void deleteMessage(String myId, String password, InputStream myPrivateKey, String timeline, String messageId);
+	
 
 }

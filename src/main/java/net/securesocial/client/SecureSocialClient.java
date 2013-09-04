@@ -327,12 +327,17 @@ public class SecureSocialClient extends BaseCommunicator implements SecureSocial
 	 * @see net.securesocial.client.SecureSocialClientInterface#deleteMessage(java.lang.String, java.lang.String, java.io.InputStream, java.lang.String, net.securesocial.client.Message)
 	 */
 	@Override
-	public void deleteMessage(String myId, String password, InputStream myPrivateKey, String timeline, Message msg) {
+	public void deleteMessage(String myId, String password, InputStream myPrivateKey, String timeline, String msgId) {
 		try {
-			delete(streamToString(myPrivateKey), "/identities/" + myId + "/current/" + timeline + "/" + msg.getId(), password);
+			delete(streamToString(myPrivateKey), "/identities/" + myId + "/current/" + timeline + "/" + msgId, password);
 		} catch (Exception ex) {
 			throwE(ex);
 		}
+	}
+	
+	@Override
+	public void deleteMessage(String myId, String password, InputStream myPrivateKey, String timeline, Message msg) {
+		deleteMessage(myId, password, myPrivateKey, timeline, msg.getId());
 	}
 
 	@SuppressWarnings("unchecked")
