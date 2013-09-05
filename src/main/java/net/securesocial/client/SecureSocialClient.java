@@ -26,6 +26,12 @@ import org.codehaus.jackson.map.ObjectMapper;
  */
 public class SecureSocialClient extends BaseCommunicator implements SecureSocialClientInterface {
 
+	private static final String KEY = "Key";
+	private static final String USERS = "users";
+	private static final String PROPERTIES = "properties";
+	private static final String PUBLIC_KEY = "publicKey";
+	private static final String ID = "id";
+
 	/* (non-Javadoc)
 	 * @see net.securesocial.client.SecureSocialClientInterface#getSuggestedIds()
 	 */
@@ -73,10 +79,10 @@ public class SecureSocialClient extends BaseCommunicator implements SecureSocial
 	public void createIdentity(InputStream privateKey, InputStream publicKey, String password, String id, Map<String, String> properties) {
 		try {
 			Map<String, Object> newPerson = new HashMap<String, Object>();
-			newPerson.put("id", id);
-			newPerson.put("publicKey", streamToString(publicKey));
+			newPerson.put(ID, id);
+			newPerson.put(PUBLIC_KEY, streamToString(publicKey));
 			if (properties != null) {
-				newPerson.put("properties", properties);
+				newPerson.put(PROPERTIES, properties);
 			}
 			ObjectMapper om = new ObjectMapper();
 			postString(streamToString(privateKey), "/identities", om.writeValueAsString(newPerson), password);
@@ -123,10 +129,10 @@ public class SecureSocialClient extends BaseCommunicator implements SecureSocial
 	public void updateIdentity(String id, InputStream oldPrivateKey, InputStream newPublicKey, String password, Map<String, String> newProperties) {
 		try {
 			Map<String, Object> newPerson = new HashMap<String, Object>();
-			newPerson.put("id", id);
-			newPerson.put("publicKey", streamToString(newPublicKey));
+			newPerson.put(ID, id);
+			newPerson.put(PUBLIC_KEY, streamToString(newPublicKey));
 			if (newProperties != null) {
-				newPerson.put("properties", newProperties);
+				newPerson.put(PROPERTIES, newProperties);
 			}
 			ObjectMapper om = new ObjectMapper();
 			putString(streamToString(oldPrivateKey), "/identities/" + id, om.writeValueAsString(newPerson), password);
@@ -177,7 +183,7 @@ public class SecureSocialClient extends BaseCommunicator implements SecureSocial
 			String privateKeyString = streamToString(privateKey);
 			String string = getString(privateKeyString, "/identities/" + id + "/incoming/users", password);
 			Map<String, Map> obj = new ObjectMapper().readValue(string, Map.class);
-			return (List<String>) obj.get("users");
+			return (List<String>) obj.get(USERS);
 		} catch (Exception ex) {
 			throwE(ex);
 		}
@@ -205,7 +211,7 @@ public class SecureSocialClient extends BaseCommunicator implements SecureSocial
 			// build message object
 			Map<String, Object> message = new HashMap<String, Object>();
 			String messageId = UUID.randomUUID().toString();
-			message.put("id", messageId);
+			message.put(ID, messageId);
 			message.put("from", senderId);
 
 			// destinations include individually encrypted keys to message
@@ -221,7 +227,7 @@ public class SecureSocialClient extends BaseCommunicator implements SecureSocial
 				destination.put("userId", targetId);
 				Map<String, String> attributes = new HashMap<String, String>();
 				// encrypt message key with this user's public key
-				attributes.put("key", CryptoWrapper.encrypt(messageKey, target.getPublicKey()));
+				attributes.put(KEY, CryptoWrapper.encrypt(messageKey, target.getPublicKey()));
 				destination.put("attributes", attributes);
 				destinations.add(destination);
 			}
@@ -292,11 +298,11 @@ public class SecureSocialClient extends BaseCommunicator implements SecureSocial
 				
 
 				// decrypt message key
-				String messageKey = CryptoWrapper.decrypt(attributes.get("key"), privateKeyString, password);
+				String messageKey = CryptoWrapper.decrypt(attributes.get(KEY), privateKeyString, password);
 				// decrypt message
 				String payload = CryptoWrapper.decryptWithPassphrase((String) message.get("envelope"), messageKey);
 
-				Message result = new Message((String) message.get("id"), (String) message.get("from"), payload, Boolean.parseBoolean((String) message.get("attachment")));
+				Message result = new Message((String) message.get(ID), (String) message.get("from"), payload, Boolean.parseBoolean((String) message.get("attachment")));
 				if (result.hasAttachment()) {
 					result.setMessageKey(messageKey);
 				}
@@ -342,8 +348,8 @@ public class SecureSocialClient extends BaseCommunicator implements SecureSocial
 
 	@SuppressWarnings("unchecked")
 	private Identity fromObjectMap(Map<String, Object> realObj) {
-		Identity result = new Identity((String) realObj.get("id"), (String) realObj.get("publicKey"));
-		Map<String, String> properties = (Map<String, String>) realObj.get("properties");
+		Identity result = new Identity((String) realObj.get(ID), (String) realObj.get(PUBLIC_KEY));
+		Map<String, String> properties = (Map<String, String>) realObj.get(PROPERTIES);
 		if (properties != null) {
 			result.getProperties().putAll(properties);
 		}
